@@ -1,1 +1,2 @@
-hhu
+// with new game.js, index.html, and style.css files, make a game where red bouncy ball vs. blue bouncy ball, both on a platform in the middle of the screen (to the left and right is just air where either ball can fall and lose), where you are the red (objective: be the last ball on platform to win) while the blue tries to stop you as the bot controlled opponent. make a title screen with a simple play button as well, a pause menu activated with p, a scoreboard at the top measuring red wins to blue wins, and "you lose!" and "you win!" screens (win screen when you're still on platform, lose screen when blue is.) this is the initial prompt.
+//
