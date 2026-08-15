@@ -164,7 +164,8 @@
     // only jump if player moved recently (or a small random chance), so standing still isn't trivially exploitable
     const playerRecentlyMoved = playerMovementTimer > 0 || Math.abs(player.vx) > 0.5;
     if(bot.canJump && Math.abs(dx) < 140 && botJumpCooldown<=0 && (playerRecentlyMoved || Math.random() < 0.02)){
-      bot.vy = -13 * difficultyAmplifier;
+      // use the same jump strength as the player
+      bot.vy = -16;
       bot.canJump=false;
       botJumpCooldown= Math.max(20, 60 / difficultyAmplifier);
     }
