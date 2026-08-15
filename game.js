@@ -80,12 +80,21 @@
   const gravity = 0.9;
   const friction = 0.995;
   const bounce = 0.8;
+  // Difficulty amplifier: >1 => harder AI, <1 => easier. Hard by default.
+  let difficultyAmplifier = 1.8;
+  // Ball speed multiplier: <1 slows movement, >1 speeds up. Slower by default.
+  let ballSpeedMultiplier = 0.6;
+  // expose setters for quick tuning from console
+  window.setDifficulty = (v) => { difficultyAmplifier = Math.max(0.1, Number(v) || difficultyAmplifier); };
+  window.setBallSpeed = (v) => { ballSpeedMultiplier = Math.max(0.05, Number(v) || ballSpeedMultiplier); };
 
   function stepPhysics(){
     [player,bot].forEach(b=>{
       b.vy += gravity;
       b.vx *= friction;
-      b.x += b.vx; b.y += b.vy;
+      // apply global speed multiplier when integrating position
+      b.x += b.vx * ballSpeedMultiplier;
+      b.y += b.vy * ballSpeedMultiplier;
     });
 
     // Platform collision (only if over platform area)
@@ -142,27 +151,16 @@
       if(player.canJump){ player.vy = -16; player.canJump = false; }
     }
 
-    // shove opponent with 'U' (single use with cooldown)
-    if (shoveCooldown <= 0 && keys['KeyU']){
-      const dx = bot.x - player.x, dy = bot.y - player.y;
-      const dist = Math.hypot(dx,dy) || 1;
-      const nx = dx / dist;
-      const shovePower = 10;
-      bot.vx += nx * shovePower;
-      bot.vy -= 6;
-      shoveCooldown = 30;
-    }
-    shoveCooldown = Math.max(0, shoveCooldown - 1);
+    // (shove feature removed)
   }
 
   // Simple bot AI
   let botJumpCooldown = 0;
-  let shoveCooldown = 0;
   function botAI(){
     const dx = player.x - bot.x;
-    if(Math.abs(dx) > 6){ bot.vx += Math.sign(dx) * 0.3; }
+    if(Math.abs(dx) > 6){ bot.vx += Math.sign(dx) * 0.3 * difficultyAmplifier; }
     // try to jump to nudge player when close
-    if(bot.canJump && Math.abs(dx) < 140 && botJumpCooldown<=0){ bot.vy = -13; bot.canJump=false; botJumpCooldown=60; }
+    if(bot.canJump && Math.abs(dx) < 140 && botJumpCooldown<=0){ bot.vy = -13 * difficultyAmplifier; bot.canJump=false; botJumpCooldown= Math.max(20, 60 / difficultyAmplifier); }
     botJumpCooldown = Math.max(0, botJumpCooldown-1);
   }
 
