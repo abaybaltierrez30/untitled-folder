@@ -27,6 +27,8 @@
   let redWins = 0, blueWins = 0;
   const MAX_WINS = 11;
   let gameOver = false;
+  // prevent bot from acting immediately at round start
+  let roundStartTimer = 0;
 
   const keys = {};
   addEventListener('keydown', e=>{
@@ -74,6 +76,7 @@
     state='playing';
     updateOverlays();
     if(playBtn) playBtn.style.display = 'none';
+    roundStartTimer = 60; // give player ~1 second (60 frames) grace before bot jumps
   }
 
   // Physics
@@ -83,7 +86,7 @@
   // Difficulty amplifier: >1 => harder AI, <1 => easier. Hard by default.
   let difficultyAmplifier = 3;
   // Ball speed multiplier: <1 slows movement, >1 speeds up. Slower by default.
-  let ballSpeedMultiplier = 0.6;
+  let ballSpeedMultiplier = 0.3;
   // expose setters for quick tuning from console
   window.setDifficulty = (v) => { difficultyAmplifier = Math.max(0.1, Number(v) || difficultyAmplifier); };
   window.setBallSpeed = (v) => { ballSpeedMultiplier = Math.max(0.05, Number(v) || ballSpeedMultiplier); };
@@ -163,7 +166,7 @@
     if(Math.abs(dx) > 6){ bot.vx += Math.sign(dx) * 0.3 * difficultyAmplifier; }
     // only jump if player moved recently (or a small random chance), so standing still isn't trivially exploitable
     const playerRecentlyMoved = playerMovementTimer > 0 || Math.abs(player.vx) > 0.5;
-    if(bot.canJump && Math.abs(dx) < 140 && botJumpCooldown<=0 && (playerRecentlyMoved || Math.random() < 0.02)){
+    if(bot.canJump && Math.abs(dx) < 140 && botJumpCooldown<=0 && roundStartTimer <= 0 && (playerRecentlyMoved || Math.random() < 0.02)){
       // use the same jump strength as the player
       bot.vy = -16;
       bot.canJump=false;
@@ -171,6 +174,7 @@
     }
     botJumpCooldown = Math.max(0, botJumpCooldown-1);
     playerMovementTimer = Math.max(0, playerMovementTimer-1);
+    roundStartTimer = Math.max(0, roundStartTimer-1);
   }
 
   // Game loop
