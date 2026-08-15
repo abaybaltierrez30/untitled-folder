@@ -12,10 +12,10 @@
 
   const scoreEl = document.getElementById('score');
   const overlays = {
-    title: document.querySelector('#overlay.title-screen'),
-    pause: document.querySelector('#overlay.pause-screen'),
-    win: document.querySelector('#overlay.win-screen'),
-    lose: document.querySelector('#overlay.lose-screen')
+    title: document.querySelector('.overlay.title-screen'),
+    pause: document.querySelector('.overlay.pause-screen'),
+    win: document.querySelector('.overlay.win-screen'),
+    lose: document.querySelector('.overlay.lose-screen')
   };
 
   const playBtn = document.getElementById('playBtn');
@@ -25,6 +25,8 @@
 
   let state = 'title';
   let redWins = 0, blueWins = 0;
+  const MAX_WINS = 11;
+  let gameOver = false;
 
   const keys = {};
   addEventListener('keydown', e=>{
@@ -35,13 +37,13 @@
   addEventListener('keyup', e=>{ keys[e.code]=false });
 
   playBtn.addEventListener('click', startGame);
-  resumeBtn.addEventListener('click', ()=>{ state='playing'; updateOverlays(); });
+  resumeBtn.addEventListener('click', ()=>{ if(!gameOver){ state='playing'; updateOverlays(); } });
   againWin.addEventListener('click', startGame);
   againLose.addEventListener('click', startGame);
 
   function showOverlay(name){ state = name; updateOverlays(); }
   function updateOverlays(){
-    for(const k in overlays){ overlays[k].classList.toggle('active', k===state); }
+    for(const k in overlays){ if(!overlays[k]) continue; overlays[k].classList.toggle('active', k===state); }
   }
 
   function togglePause(){ if(state==='playing'){ state='pause'; updateOverlays(); } else if(state==='pause'){ state='playing'; updateOverlays(); }}
@@ -66,7 +68,13 @@
     bot = makeBall(right, platform.y - 30, 22, 'blue', false);
   }
 
-  function startGame(){ resetBalls(); state='playing'; updateOverlays(); playBtn.style.display = 'none'; }
+  function startGame(){
+    if(gameOver) return;
+    resetBalls();
+    state='playing';
+    updateOverlays();
+    if(playBtn) playBtn.style.display = 'none';
+  }
 
   // Physics
   const gravity = 0.9;
@@ -176,11 +184,25 @@
     if(player.y - player.r > H){ // player lost
       blueWins++;
       updateScore();
+      if(overlays.lose && overlays.lose.querySelector){ overlays.lose.querySelector('h2').textContent = 'you lose!'; }
+      if(blueWins >= MAX_WINS){
+        gameOver = true;
+        if(againLose) againLose.style.display = 'none';
+        if(againWin) againWin.style.display = 'none';
+        if(playBtn) playBtn.style.display = 'none';
+      }
       showOverlay('lose');
     }
     if(bot.y - bot.r > H){ // bot lost
       redWins++;
       updateScore();
+      if(overlays.win && overlays.win.querySelector){ overlays.win.querySelector('h2').textContent = 'you win!'; }
+      if(redWins >= MAX_WINS){
+        gameOver = true;
+        if(againLose) againLose.style.display = 'none';
+        if(againWin) againWin.style.display = 'none';
+        if(playBtn) playBtn.style.display = 'none';
+      }
       showOverlay('win');
     }
   }
