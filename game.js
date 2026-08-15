@@ -81,7 +81,7 @@
   const friction = 0.995;
   const bounce = 0.8;
   // Difficulty amplifier: >1 => harder AI, <1 => easier. Hard by default.
-  let difficultyAmplifier = 1.8;
+  let difficultyAmplifier = 3;
   // Ball speed multiplier: <1 slows movement, >1 speeds up. Slower by default.
   let ballSpeedMultiplier = 0.6;
   // expose setters for quick tuning from console
@@ -145,10 +145,10 @@
   // Player controls
   function applyPlayerInput(){
     const s = 0.6;
-    if(keys['ArrowLeft'] || keys['KeyA']) player.vx -= s;
-    if(keys['ArrowRight'] || keys['KeyD']) player.vx += s;
+    if(keys['ArrowLeft'] || keys['KeyA']){ player.vx -= s; playerMovementTimer = 80; }
+    if(keys['ArrowRight'] || keys['KeyD']){ player.vx += s; playerMovementTimer = 80; }
     if(keys['Space'] || keys['KeyW'] || keys['ArrowUp']){
-      if(player.canJump){ player.vy = -16; player.canJump = false; }
+      if(player.canJump){ player.vy = -16; player.canJump = false; playerMovementTimer = 80; }
     }
 
     // (shove feature removed)
@@ -156,12 +156,20 @@
 
   // Simple bot AI
   let botJumpCooldown = 0;
+  // track when the player has moved recently so AI doesn't overreact to a standing player
+  let playerMovementTimer = 0;
   function botAI(){
     const dx = player.x - bot.x;
     if(Math.abs(dx) > 6){ bot.vx += Math.sign(dx) * 0.3 * difficultyAmplifier; }
-    // try to jump to nudge player when close
-    if(bot.canJump && Math.abs(dx) < 140 && botJumpCooldown<=0){ bot.vy = -13 * difficultyAmplifier; bot.canJump=false; botJumpCooldown= Math.max(20, 60 / difficultyAmplifier); }
+    // only jump if player moved recently (or a small random chance), so standing still isn't trivially exploitable
+    const playerRecentlyMoved = playerMovementTimer > 0 || Math.abs(player.vx) > 0.5;
+    if(bot.canJump && Math.abs(dx) < 140 && botJumpCooldown<=0 && (playerRecentlyMoved || Math.random() < 0.02)){
+      bot.vy = -13 * difficultyAmplifier;
+      bot.canJump=false;
+      botJumpCooldown= Math.max(20, 60 / difficultyAmplifier);
+    }
     botJumpCooldown = Math.max(0, botJumpCooldown-1);
+    playerMovementTimer = Math.max(0, playerMovementTimer-1);
   }
 
   // Game loop
