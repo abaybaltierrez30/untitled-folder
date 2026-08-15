@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Red vs Blue — Platform Duel</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="hud">
+    <div id="score">Red: 0 — Blue: 0</div>
+    <div id="hint">Arrows = move, Space = jump, P = pause</div>
+  </div>
+
+  <canvas id="game"></canvas>
+
+  <div id="overlay title-screen" class="overlay active">
+    <div class="panel">
+      <h1>Red vs Blue</h1>
+      <p>Be the last ball on the platform.</p>
+      <button id="playBtn">Play</button>
+    </div>
+  </div>
+
+  <div id="overlay pause-screen" class="overlay">
+    <div class="panel">
+      <h2>Paused</h2>
+      <button id="resumeBtn">Resume</button>
+    </div>
+  </div>
+
+  <div id="overlay win-screen" class="overlay">
+    <div class="panel">
+      <h2>You Win!</h2>
+      <button id="againWin">Play Again</button>
+    </div>
+  </div>
+
+  <div id="overlay lose-screen" class="overlay">
+    <div class="panel">
+      <h2>You Lose!</h2>
+      <button id="againLose">Try Again</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
