@@ -27,7 +27,11 @@
   let redWins = 0, blueWins = 0;
 
   const keys = {};
-  addEventListener('keydown', e=>{ keys[e.code]=true; if(e.key==='p' || e.key==='P'){ togglePause() } });
+  addEventListener('keydown', e=>{
+    if (e.code === 'Space') e.preventDefault();
+    keys[e.code] = true;
+    if (e.key === 'p' || e.key === 'P') { togglePause(); }
+  });
   addEventListener('keyup', e=>{ keys[e.code]=false });
 
   playBtn.addEventListener('click', startGame);
@@ -62,7 +66,7 @@
     bot = makeBall(right, platform.y - 30, 22, 'blue', false);
   }
 
-  function startGame(){ resetBalls(); state='playing'; updateOverlays(); }
+  function startGame(){ resetBalls(); state='playing'; updateOverlays(); playBtn.style.display = 'none'; }
 
   // Physics
   const gravity = 0.9;
@@ -124,15 +128,28 @@
   // Player controls
   function applyPlayerInput(){
     const s = 0.6;
-    if(keys['ArrowLeft']) player.vx -= s;
-    if(keys['ArrowRight']) player.vx += s;
+    if(keys['ArrowLeft'] || keys['KeyA']) player.vx -= s;
+    if(keys['ArrowRight'] || keys['KeyD']) player.vx += s;
     if(keys['Space'] || keys['KeyW'] || keys['ArrowUp']){
       if(player.canJump){ player.vy = -16; player.canJump = false; }
     }
+
+    // shove opponent with 'U' (single use with cooldown)
+    if (shoveCooldown <= 0 && keys['KeyU']){
+      const dx = bot.x - player.x, dy = bot.y - player.y;
+      const dist = Math.hypot(dx,dy) || 1;
+      const nx = dx / dist;
+      const shovePower = 10;
+      bot.vx += nx * shovePower;
+      bot.vy -= 6;
+      shoveCooldown = 30;
+    }
+    shoveCooldown = Math.max(0, shoveCooldown - 1);
   }
 
   // Simple bot AI
   let botJumpCooldown = 0;
+  let shoveCooldown = 0;
   function botAI(){
     const dx = player.x - bot.x;
     if(Math.abs(dx) > 6){ bot.vx += Math.sign(dx) * 0.3; }
